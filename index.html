@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RED DEAD REDEMPTION II — Official Game Experience Portal</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Premium -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@500;700;900&family=Montserrat:wght@300;400;600;800&family=Reenie+Beanie&family=Rye&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        rdr: {
+                            red: '#C8102E',
+                            darkred: '#500000',
+                            gold: '#D4AF37',
+                            lightgold: '#F3E5AB',
+                            orange: '#FF5722',
+                            dark: '#080808',
+                            panel: '#121214',
+                            paper: '#E6D5AC'
+                        }
+                    },
+                    fontFamily: {
+                        cinzel: ['Cinzel', 'serif'],
+                        cinzelDeco: ['"Cinzel Decorative"', 'serif'],
+                        montserrat: ['Montserrat', 'sans-serif'],
+                        western: ['Rye', 'cursive'],
+                        handwriting: ['"Reenie Beanie"', 'cursive']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { cursor: crosshair; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #080808; }
+        ::-webkit-scrollbar-thumb { background: #C8102E; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #D4AF37; }
+
+        .dead-eye-active {
+            filter: sepia(0.85) hue-rotate(-25deg) contrast(1.5) brightness(0.85);
+            transition: filter 0.3s ease;
+        }
+
+        .glass-panel {
+            background: rgba(18, 18, 20, 0.88);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(212, 175, 55, 0.25);
+        }
+        .vintage-paper {
+            background-color: #e3d0a6;
+            background-image: radial-gradient(#cbb27a 1px, transparent 0);
+            background-size: 10px 10px;
+            color: #1a1105;
+        }
+        .glow-gold { box-shadow: 0 0 35px rgba(212, 175, 55, 0.2); }
+        .glow-red { box-shadow: 0 0 35px rgba(200, 16, 46, 0.3); }
+    </style>
+</head>
+<body class="bg-rdr-dark text-gray-200 font-montserrat antialiased selection:bg-rdr-red selection:text-white relative overflow-x-hidden transition-colors duration-500" id="mainBody">
+
+    <!-- Canvas de Clima Dinâmico -->
+    <canvas id="weatherCanvas" class="fixed inset-0 pointer-events-none z-0 opacity-70"></canvas>
+
+    <!-- Top Navigation Bar -->
+    <header class="fixed top-0 left-0 w-full z-50 glass-panel border-b border-rdr-gold/20 px-6 py-3">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <a href="#" class="flex items-center space-x-3 group" onclick="playSFX('click')">
+                <div class="w-10 h-10 bg-rdr-red rounded flex items-center justify-center font-western text-2xl text-white shadow-lg group-hover:scale-105 transition" id="logoBadge">R</div>
+                <div>
+                    <span class="font-cinzelDeco text-lg font-black tracking-widest text-white block leading-none">RED DEAD</span>
+                    <span class="font-cinzel text-xs text-rdr-gold tracking-widest uppercase font-bold">REDEMPTION II</span>
+                </div>
+            </a>
+
+            <!-- Selector de Clima & Honra -->
+            <div class="hidden md:flex items-center space-x-6 text-xs font-bold uppercase tracking-wider">
+                <div class="flex items-center gap-2 bg-zinc-900/80 p-1.5 rounded-lg border border-zinc-800">
+                    <span class="text-gray-400 text-[10px] pl-2">CLIMA:</span>
+                    <button onclick="setWeather('sunset')" class="px-2 py-1 rounded hover:bg-rdr-orange/30 text-rdr-gold">🌅 Sunset</button>
+                    <button onclick="setWeather('snow')" class="px-2 py-1 rounded hover:bg-blue-500/30 text-blue-300">❄️ Colter</button>
+                    <button onclick="setWeather('rain')" class="px-2 py-1 rounded hover:bg-zinc-700 text-gray-300">🌧️ Chuva</button>
+                </div>
+
+                <button onclick="toggleHonor()" id="honorBtn" class="px-3 py-1.5 bg-rdr-gold/20 border border-rdr-gold text-rdr-gold rounded hover:bg-rdr-gold hover:text-rdr-dark transition flex items-center gap-2">
+                    <i class="fa-solid fa-scale-balanced" id="honorIcon"></i>
+                    <span id="honorText">High Honor</span>
+                </button>
+            </div>
+
+            <button onclick="startDeadEyeGame()" class="px-4 py-2 bg-rdr-red text-white font-bold text-xs uppercase tracking-widest rounded shadow-lg hover:bg-rdr-darkred transition flex items-center gap-2 animate-pulse">
+                <i class="fa-solid fa-crosshairs"></i>
+                <span>Dead Eye Mode</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- HERO SECTION COM ARTE OFICIAL DE RDR2 -->
+    <section class="relative min-h-screen flex items-center justify-center pt-24 pb-16 px-6 z-10">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-rdr-red/20 border border-rdr-red/60 text-rdr-lightgold rounded-full text-xs font-bold uppercase tracking-widest">
+                    <i class="fa-solid fa-star text-rdr-gold"></i> Rockstar Games Official Asset Engine
+                </div>
+
+                <h1 class="font-cinzelDeco text-4xl sm:text-6xl xl:text-7xl font-black text-white leading-none tracking-tight">
+                    ARTHUR MORGAN <br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-rdr-gold via-rdr-orange to-rdr-red">& THE OUTLAWS</span>
+                </h1>
+
+                <p class="text-gray-300 text-base sm:text-lg font-light leading-relaxed max-w-2xl">
+                    Uma experiência imersiva baseada diretamente em capturas de tela e artes originais de **Red Dead Redemption 2**. Explore os cavalos do jogo, ative o modo Dead Eye e consulte o diário autêntico de Arthur Morgan.
+                </p>
+
+                <div class="flex flex-wrap gap-4 justify-center lg:justify-start pt-2">
+                    <a href="#stable" onclick="playSFX('click')" class="px-8 py-4 bg-gradient-to-r from-rdr-red to-rdr-darkred text-white font-bold text-xs tracking-widest uppercase rounded shadow-2xl hover:brightness-125 transition flex items-center gap-3">
+                        <i class="fa-solid fa-horse"></i> Cavalos de RDR2
+                    </a>
+                    <a href="#journal" onclick="playSFX('page')" class="px-8 py-4 glass-panel border border-rdr-gold/50 text-rdr-gold hover:bg-rdr-gold/10 font-bold text-xs tracking-widest uppercase rounded transition flex items-center gap-3">
+                        <i class="fa-solid fa-book-open"></i> Diário do Arthur
+                    </a>
+                </div>
+            </div>
+
+            <!-- Frame da Imagem Principal com Screenshot de RDR2 -->
+            <div class="lg:col-span-5">
+                <div class="glass-panel p-3 rounded-3xl border border-rdr-gold/40 glow-gold relative overflow-hidden group">
+                    <div class="relative aspect-[4/5] rounded-2xl overflow-hidden bg-black">
+                        <!-- Screenshot Real do Jogo RDR2: Arthur Morgan riding horse -->
+                        <img src="https://wallpapers.com/images/featured/red-dead-redemption-2-pictures-sfn53eag74atb318.jpg" alt="RDR2 Arthur Morgan Gameplay" class="w-full h-full object-cover object-center transform group-hover:scale-105 transition duration-700">
+                        
+                        <div class="absolute inset-0 bg-gradient-to-t from-rdr-dark via-transparent to-transparent opacity-80"></div>
+
+                        <div class="absolute top-4 left-4 z-10">
+                            <span class="bg-rdr-red/90 text-white px-3 py-1 rounded text-[10px] font-bold border border-rdr-gold/40 uppercase tracking-widest">
+                                RDR2 4K Gameplay Screenshot
+                            </span>
+                        </div>
+
+                        <div class="absolute bottom-6 left-6 right-6 z-10 text-left">
+                            <h3 class="font-cinzel text-2xl font-bold text-white drop-shadow-md">Arthur Morgan</h3>
+                            <p class="text-xs text-rdr-lightgold uppercase tracking-widest mt-1 flex items-center gap-1.5">
+                                <i class="fa-solid fa-location-dot text-rdr-red"></i> New Hanover • Golden Hour
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ESTÁBULO COM SCREENSHOTS REAIS DOS CAVALOS DO JOGO -->
+    <section id="stable" class="py-24 px-6 bg-zinc-950/90 border-t border-b border-zinc-800 relative z-10">
+        <div class="max-w-7xl mx-auto">
+            
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <span class="text-rdr-red text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-warehouse"></i> Valentine Stable Game Asset
+                </span>
+                <h2 class="font-cinzelDeco text-3xl sm:text-5xl font-bold text-white mt-2">Cavalos de Red Dead 2</h2>
+                <p class="text-gray-400 text-sm mt-3">Clique para alternar entre as capturas de tela reais das raças de cavalo disponíveis no jogo.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                
+                <!-- Lista de Seleção de Cavalos -->
+                <div class="lg:col-span-4 space-y-3">
+                    <button onclick="selectHorse('hungarian')" id="btn-hungarian" class="w-full text-left p-4 rounded-xl glass-panel-red border-l-4 border-rdr-red transition flex items-center gap-4">
+                        <img src="https://static.wikia.nocookie.net/reddeadredemption/images/1/1a/Hungarian_Halfbred_Flaxen_Chestnut.png/revision/latest?cb=20190526010931" alt="Hungarian Halfbred RDR2" class="w-12 h-12 rounded-lg object-cover bg-zinc-900 border border-rdr-gold/30">
+                        <div class="flex-1">
+                            <h4 class="font-cinzel text-sm font-bold text-white">Hungarian Halfbred</h4>
+                            <p class="text-[11px] text-gray-400">Cavalo de Guerra • Corajoso</p>
+                        </div>
+                        <span class="text-xs font-bold text-rdr-gold">$150</span>
+                    </button>
+
+                    <button onclick="selectHorse('arabian')" id="btn-arabian" class="w-full text-left p-4 rounded-xl glass-panel border border-zinc-800 hover:border-rdr-gold/50 transition flex items-center gap-4">
+                        <img src="https://static.wikia.nocookie.net/reddeadredemption/images/3/30/White_Arabian_RDR2.png/revision/latest?cb=20191208003606" alt="White Arabian RDR2" class="w-12 h-12 rounded-lg object-cover bg-zinc-900 border border-rdr-gold/30">
+                        <div class="flex-1">
+                            <h4 class="font-cinzel text-sm font-bold text-white">White Arabian</h4>
+                            <p class="text-[11px] text-gray-400">Elite • Lago Isabella</p>
+                        </div>
+                        <span class="text-xs font-bold text-rdr-gold">$1,200</span>
+                    </button>
+
+                    <button onclick="selectHorse('turkoman')" id="btn-turkoman" class="w-full text-left p-4 rounded-xl glass-panel border border-zinc-800 hover:border-rdr-gold/50 transition flex items-center gap-4">
+                        <img src="https://static.wikia.nocookie.net/reddeadredemption/images/f/f6/Turkoman_Dark_Bay.png/revision/latest?cb=20190526013627" alt="Turkoman RDR2" class="w-12 h-12 rounded-lg object-cover bg-zinc-900 border border-rdr-gold/30">
+                        <div class="flex-1">
+                            <h4 class="font-cinzel text-sm font-bold text-white">Turkoman Dark Bay</h4>
+                            <p class="text-[11px] text-gray-400">Corrida & Guerra</p>
+                        </div>
+                        <span class="text-xs font-bold text-rdr-gold">$925</span>
+                    </button>
+                </div>
+
+                <!-- Display do Cavalo Selecionado (In-Game Screenshot) -->
+                <div class="lg:col-span-8 glass-panel p-6 sm:p-8 rounded-2xl border border-rdr-gold/30">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 items-center">
+                        <div class="relative aspect-square rounded-xl overflow-hidden border border-rdr-gold/30 shadow-2xl bg-black">
+                            <img id="horseMainImg" src="https://images.wallpapersden.com/image/download/red-dead-redemption-2-hd-gaming-art_a21qa26UmZqaraWkpJRmZ21lrWdnZQ.jpg" class="w-full h-full object-cover transition duration-500">
+                            <div class="absolute inset-0 bg-gradient-to-t from-rdr-dark via-transparent to-transparent"></div>
+                            <span class="absolute bottom-3 left-3 text-xs font-bold text-rdr-gold bg-rdr-dark/90 px-2.5 py-1 rounded border border-rdr-gold/30" id="horseCategory">Cavalo de Guerra</span>
+                        </div>
+
+                        <div class="space-y-4">
+                            <h3 class="font-cinzel text-3xl font-bold text-white" id="horseTitle">Hungarian Halfbred</h3>
+                            <p class="text-xs text-gray-300 italic leading-relaxed" id="horseDescription">"Excepcional em situações de combate em RDR2. Não vacila nem diante de tiroteios ou predadores."</p>
+
+                            <!-- Status Bars -->
+                            <div class="space-y-3 pt-2">
+                                <div>
+                                    <div class="flex justify-between text-xs font-bold mb-1"><span class="text-gray-300">VELOCIDADE</span><span class="text-rdr-gold" id="valSpeed">6 / 10</span></div>
+                                    <div class="w-full bg-zinc-900 h-2 rounded-full overflow-hidden"><div id="barSpeed" class="bg-rdr-gold h-full" style="width: 60%"></div></div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs font-bold mb-1"><span class="text-gray-300">ACELERAÇÃO</span><span class="text-rdr-gold" id="valAccel">5 / 10</span></div>
+                                    <div class="w-full bg-zinc-900 h-2 rounded-full overflow-hidden"><div id="barAccel" class="bg-rdr-gold h-full" style="width: 50%"></div></div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs font-bold mb-1"><span class="text-gray-300">SAÚDE</span><span class="text-rdr-red" id="valHealth">8 / 10</span></div>
+                                    <div class="w-full bg-zinc-900 h-2 rounded-full overflow-hidden"><div id="barHealth" class="bg-rdr-red h-full" style="width: 80%"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- CARTAZ WANTED COM RETRATO OFICIAL DE ARTHUR MORGAN -->
+    <section id="wanted" class="py-24 px-6 relative z-10">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <span class="text-rdr-gold text-xs font-bold uppercase tracking-widest"><i class="fa-solid fa-scroll"></i> Blackwater Sheriff Office</span>
+                <h2 class="font-cinzelDeco text-3xl sm:text-5xl font-bold text-white mt-2">Cartaz de Procurado RDR2</h2>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                <div class="lg:col-span-6 glass-panel p-8 rounded-2xl space-y-6">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-rdr-gold mb-2">Nome do Fora da Lei</label>
+                        <input type="text" id="outlawNameInput" value="Arthur Morgan" oninput="updateWantedPoster()" class="w-full bg-zinc-950 border border-zinc-800 rounded p-3 text-white text-sm focus:border-rdr-red outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-rdr-gold mb-2">Recompensa ($ USD)</label>
+                        <input type="number" id="outlawBountyInput" value="5000" oninput="updateWantedPoster()" class="w-full bg-zinc-950 border border-zinc-800 rounded p-3 text-white text-sm focus:border-rdr-red outline-none">
+                    </div>
+                    <button onclick="window.print()" class="w-full py-3.5 bg-rdr-gold text-rdr-dark font-bold text-xs uppercase tracking-widest rounded hover:bg-rdr-lightgold transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-print"></i> Imprimir Cartaz em PDF
+                    </button>
+                </div>
+
+                <!-- Poster Vintage com Arte de Arthur Morgan de RDR2 -->
+                <div class="lg:col-span-6 flex justify-center">
+                    <div class="vintage-paper w-full max-w-md p-8 rounded-lg shadow-2xl border-4 border-amber-950 text-center space-y-4 relative transform rotate-1">
+                        <div class="border-b-2 border-amber-950 pb-2">
+                            <h3 class="font-western text-4xl tracking-widest text-amber-950">WANTED</h3>
+                            <p class="text-[10px] font-bold tracking-widest uppercase text-amber-900">DEAD OR ALIVE</p>
+                        </div>
+
+                        <!-- Retrato Oficial de Arthur Morgan em RDR2 -->
+                        <div class="w-44 h-48 mx-auto border-2 border-amber-950 p-1 bg-amber-100 shadow-inner overflow-hidden my-4">
+                            <img src="https://images.wallpapersden.com/image/download/red-dead-redemption-2-arthur-morgan_a21qa26UmZqaraWkpJRmZ21lrWdnZQ.jpg" alt="Arthur Morgan RDR2 Wanted Portrait" class="w-full h-full object-cover sepia contrast-125">
+                        </div>
+
+                        <div>
+                            <h4 class="font-western text-2xl text-amber-950 uppercase" id="posterName">ARTHUR MORGAN</h4>
+                            <p class="text-[11px] font-bold text-amber-900 mt-1">GRAND THEFT & TRAIN ROBBERY</p>
+                        </div>
+
+                        <div class="bg-amber-950 text-amber-100 p-3 rounded">
+                            <span class="text-[10px] uppercase block tracking-widest">REWARD</span>
+                            <span class="font-western text-3xl text-rdr-gold" id="posterBounty">$5,000</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAPA INTERATIVO COM LOCAIS REAIS DE RDR2 -->
+    <section id="map" class="py-24 px-6 bg-zinc-950 border-t border-b border-zinc-800 z-10 relative">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <span class="text-rdr-red text-xs font-bold uppercase tracking-widest"><i class="fa-solid fa-map"></i> Cartografia RDR2</span>
+                <h2 class="font-cinzelDeco text-3xl sm:text-5xl font-bold text-white mt-2">Locais de New Hanover</h2>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                <!-- Screenshot do Local do Jogo RDR2 -->
+                <div class="lg:col-span-7 rounded-2xl overflow-hidden border border-rdr-gold/30 aspect-video relative group shadow-2xl bg-black">
+                    <img id="locImg" src="https://images2.alphacoders.com/910/910901.jpg" alt="Valentine Town RDR2 Screenshot" class="w-full h-full object-cover transition duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-rdr-dark via-transparent to-transparent"></div>
+                    <span class="absolute bottom-4 left-4 text-sm font-cinzel font-bold text-white bg-rdr-dark/90 px-3 py-1 rounded border border-rdr-gold/30" id="locTitleDisplay">Valentine Town (RDR2)</span>
+                </div>
+
+                <!-- Painel de Botões dos Locais de RDR2 -->
+                <div class="lg:col-span-5 space-y-4">
+                    <button onclick="showLoc('valentine')" class="w-full p-4 glass-panel rounded-xl text-left hover:border-rdr-gold transition flex justify-between items-center">
+                        <div>
+                            <h4 class="font-cinzel font-bold text-white">Valentine Town</h4>
+                            <p class="text-xs text-gray-400">Saloon & Leilão de Gado em New Hanover</p>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-rdr-gold"></i>
+                    </button>
+
+                    <button onclick="showLoc('horseshoe')" class="w-full p-4 glass-panel rounded-xl text-left hover:border-rdr-gold transition flex justify-between items-center">
+                        <div>
+                            <h4 class="font-cinzel font-bold text-white">Horseshoe Overlook</h4>
+                            <p class="text-xs text-gray-400">Primeiro Acampamento da Gangue Van der Linde</p>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-rdr-gold"></i>
+                    </button>
+
+                    <button onclick="showLoc('emerald')" class="w-full p-4 glass-panel rounded-xl text-left hover:border-rdr-gold transition flex justify-between items-center">
+                        <div>
+                            <h4 class="font-cinzel font-bold text-white">Emerald Ranch</h4>
+                            <p class="text-xs text-gray-400">Receptador de Carruagens de Seamus</p>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-rdr-gold"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- DIÁRIO MANUSCRITO COM O DESENHO ORIGINAL DE ARTHUR MORGAN -->
+    <section id="journal" class="py-24 px-6 relative z-10">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-12">
+                <span class="text-rdr-gold text-xs font-bold uppercase tracking-widest"><i class="fa-solid fa-book"></i> RDR2 Journal Asset</span>
+                <h2 class="font-cinzelDeco text-3xl sm:text-5xl font-bold text-white mt-2">Arthur's Journal</h2>
+            </div>
+
+            <div class="vintage-paper p-8 sm:p-12 rounded-xl shadow-2xl border-4 border-amber-950 font-handwriting text-2xl sm:text-3xl text-amber-950 leading-relaxed relative min-h-[420px]">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                    <div class="md:col-span-2 space-y-4">
+                        <p class="font-bold text-3xl border-b border-amber-900/30 pb-2">"May 1899 — New Hanover"</p>
+                        <p>Cavalgamos pelas planícies sob um pôr do sol alaranjado. O Meio-Sangue Húngaro que consegui em Valentine tem se provado um animal firme diante de tiroteios.</p>
+                        <p class="text-xl italic text-amber-900">— "We're more ghosts than people now, Dutch..."</p>
+                    </div>
+
+                    <!-- Desenho do Diário Autêntico de Arthur Morgan no Jogo -->
+                    <div class="p-2 border-2 border-amber-950/40 rounded bg-amber-100/60 text-center">
+                        <img src="https://preview.redd.it/arthur-morgans-journal-sketches-v0-qbhgftb08u2b1.jpg?width=640&crop=smart&auto=webp&s=55cfdb02a3f7ff9727dc0e1329aee558d1976a14" alt="Arthur Morgan Journal Sketch RDR2" class="w-full h-36 object-cover rounded filter contrast-125">
+                        <span class="text-[10px] font-sans font-bold text-amber-950 mt-1 block uppercase">In-Game Journal Sketch</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- FOOTER -->
+    <footer class="bg-zinc-950 border-t border-rdr-red/40 py-10 px-6 text-center text-xs text-gray-500 z-10 relative">
+        <p class="font-cinzelDeco text-base text-rdr-gold">Red Dead Redemption II — Ultimate Game Portal</p>
+        <p class="mt-2">Desenvolvido com Vintel IA • Imagens Oficiais da Rockstar Games</p>
+    </footer>
+
+    <!-- JAVASCRIPT & LOGIC -->
+    <script>
+        // SINTETIZADOR WEB AUDIO API
+        let audioCtx = null;
+        function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+
+        function playSFX(type) {
+            initAudio();
+            const now = audioCtx.currentTime;
+            if (type === 'click') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(600, now);
+                gain.gain.setValueAtTime(0.2, now);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(); osc.stop(now + 0.05);
+            } else if (type === 'gunshot') {
+                const bufferSize = audioCtx.sampleRate * 0.25;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.03));
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+                noise.connect(audioCtx.destination);
+                noise.start();
+            }
+        }
+
+        // CAVALOS DO JOGO RDR2
+        const horses = {
+            hungarian: {
+                title: 'Hungarian Halfbred',
+                category: 'Cavalo de Guerra',
+                desc: 'Excepcional em situações de combate em RDR2. Não vacila nem diante de tiroteios ou predadores.',
+                speed: 6, accel: 5, health: 8,
+                img: 'https://images.wallpapersden.com/image/download/red-dead-redemption-2-hd-gaming-art_a21qa26UmZqaraWkpJRmZ21lrWdnZQ.jpg'
+            },
+            arabian: {
+                title: 'White Arabian',
+                category: 'Elite (Lago Isabella)',
+                desc: 'O cavalo selvagem mais rápido e ágil do jogo, encontrado na região de neve de Ambarino.',
+                speed: 9, accel: 8, health: 6,
+                img: 'https://images.hdqwalls.com/wallpapers/red-dead-redemption-2-snow-horse-4k-qw.jpg'
+            },
+            turkoman: {
+                title: 'Turkoman Dark Bay',
+                category: 'Corrida & Guerra',
+                desc: 'Uma das montarias mais bem equilibradas de RDR2, combinando grande porte e velocidade.',
+                speed: 8, accel: 7, health: 9,
+                img: 'https://images3.alphacoders.com/949/949170.jpg'
+            }
+        };
+
+        function selectHorse(key) {
+            playSFX('click');
+            const h = horses[key];
+            document.getElementById('horseTitle').innerText = h.title;
+            document.getElementById('horseCategory').innerText = h.category;
+            document.getElementById('horseDescription').innerText = `"${h.desc}"`;
+            document.getElementById('horseMainImg').src = h.img;
+
+            document.getElementById('valSpeed').innerText = `${h.speed} / 10`;
+            document.getElementById('barSpeed').style.width = `${h.speed * 10}%`;
+
+            document.getElementById('valAccel').innerText = `${h.accel} / 10`;
+            document.getElementById('barAccel').style.width = `${h.accel * 10}%`;
+
+            document.getElementById('valHealth').innerText = `${h.health} / 10`;
+            document.getElementById('barHealth').style.width = `${h.health * 10}%`;
+        }
+
+        // LOCAIS DE RDR2
+        const locations = {
+            valentine: { title: 'Valentine Town (RDR2)', img: 'https://images2.alphacoders.com/910/910901.jpg' },
+            horseshoe: { title: 'Horseshoe Overlook (RDR2)', img: 'https://wallpapers.com/images/featured/red-dead-redemption-2-pictures-sfn53eag74atb318.jpg' },
+            emerald: { title: 'Emerald Ranch (RDR2)', img: 'https://images.hdqwalls.com/wallpapers/red-dead-redemption-2-2018-game-4k-4b.jpg' }
+        };
+
+        function showLoc(key) {
+            playSFX('click');
+            document.getElementById('locTitleDisplay').innerText = locations[key].title;
+            document.getElementById('locImg').src = locations[key].img;
+        }
+
+        function updateWantedPoster() {
+            const name = document.getElementById('outlawNameInput').value || 'ARTHUR MORGAN';
+            const bounty = document.getElementById('outlawBountyInput').value || '5000';
+            document.getElementById('posterName').innerText = name.toUpperCase();
+            document.getElementById('posterBounty').innerText = `$${parseInt(bounty).toLocaleString()}`;
+        }
+
+        // CLIMA CANVAS
+        const canvas = document.getElementById('weatherCanvas');
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        let currentWeather = 'sunset';
+        const particles = Array.from({ length: 50 }, () => ({
+            x: Math.random() * width, y: Math.random() * height,
+            size: Math.random() * 3 + 1, speedY: Math.random() * 1 + 0.5
+        }));
+
+        function setWeather(mode) { currentWeather = mode; playSFX('click'); }
+
+        function drawWeather() {
+            ctx.clearRect(0, 0, width, height);
+            particles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = currentWeather === 'snow' ? '#ffffff' : '#FF5722';
+                ctx.fill();
+                p.y += currentWeather === 'snow' ? 1.5 : -0.5;
+                if (p.y < 0) p.y = height;
+                if (p.y > height) p.y = 0;
+            });
+            requestAnimationFrame(drawWeather);
+        }
+        drawWeather();
+    </script>
+</body>
+</html>
